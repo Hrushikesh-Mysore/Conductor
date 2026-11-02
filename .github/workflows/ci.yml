@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  ORT_VERSION: 1.31.1  # keep in sync with src/ml/CMakeLists.txt
+
+jobs:
+  no-agent-files:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail if AI agent files are tracked
+        run: |
+          if git ls-files | grep -iE '(^|/)(\.claude|\.codex|\.agy|\.gemini|\.cursor|\.windsurf)/|(^|/)(claude|claude\.local|agents?|gemini|agy)\.md$'; then
+            echo "AI agent files must stay local (see .gitignore)"; exit 1
+          fi
+
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y cmake libsqlite3-dev
+      - run: cmake -B build -DCONDUCTOR_WITH_ML=OFF -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror"
+      - run: cmake --build build -j
+      - run: ctest --test-dir build --output-on-failure
+
+  with-ml:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y cmake libsqlite3-dev
+      - name: Install ONNX Runtime SDK (outside the repo)
+        run: |
+          curl -sSfL "https://github.com/microsoft/onnxruntime/releases/download/v${ORT_VERSION}/onnxruntime-linux-x64-${ORT_VERSION}.tgz" | tar xz -C "$RUNNER_TEMP"
+          echo "ONNXRUNTIME_ROOT=$RUNNER_TEMP/onnxruntime-linux-x64-${ORT_VERSION}" >> "$GITHUB_ENV"
+      - run: cmake -B build -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror"
+      - run: cmake --build build -j
+      - run: ctest --test-dir build --output-on-failure

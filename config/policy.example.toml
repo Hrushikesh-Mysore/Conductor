@@ -1,0 +1,58 @@
+# Example Conductor policy. Not parsed yet (Phase 1: TOML loader). Copy to ~/.conductor/policy.toml.
+
+# "router": Conductor's rules pick the worker.
+# "planner": the planner AI names the worker; it is used only if ready, never swapped.
+dispatch_mode = "planner"
+
+[budget]
+per_task_usd = 0.50
+per_day_usd = 2.00
+max_review_rounds = 3          # after this many rejects, the task goes to a human
+
+# --- Workers: free API tiers, official CLIs, and the manual copy-paste fallback ---
+
+[[worker]]
+id = "free-api-1"
+kind = "http"                  # OpenAI-compatible endpoint
+base_url = "https://example-provider/v1"
+model = "some-free-model"
+key_ref = "conductor/free-api-1"   # keychain entry, never the key itself
+lanes = ["general", "research"]
+
+[[worker]]
+id = "codex"
+kind = "cli"
+argv = ["codex", "exec", "--json", "--ephemeral"]
+env = { CODEX_HOME = "~/.conductor/profiles/work-ai/codex" }
+lanes = ["coding"]
+
+[[worker]]
+id = "agy"
+kind = "cli"
+argv = ["agy"]
+env = { HOME = "~/.conductor/profiles/work-ai/agy" }
+lanes = ["research", "coding"]
+
+[[worker]]
+id = "manual"
+kind = "manual"                # prints the prompt for a human to paste into any AI
+lanes = ["research", "coding", "general"]
+
+# --- Routing rules (used in router mode, and in planner mode when no worker is named) ---
+# First matching rule whose worker is ready wins. "manual" last = the fallback.
+
+[[route]]
+lane = "coding"
+worker = "codex"
+
+[[route]]
+lane = "research"
+worker = "free-api-1"
+
+[[route]]
+lane = "general"
+worker = "free-api-1"
+
+[[route]]
+lane = "coding"
+worker = "manual"

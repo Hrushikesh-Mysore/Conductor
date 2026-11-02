@@ -1,0 +1,57 @@
+# --- AI agent configs and notes: never committed ---
+.claude/
+.codex/
+.agy/
+.gemini/
+.cursor/
+.windsurf/
+.continue/
+.copilot/
+.aider*
+.cursorrules
+.windsurfrules
+[Cc][Ll][Aa][Uu][Dd][Ee].md
+[Cc][Ll][Aa][Uu][Dd][Ee].local.md
+[Aa][Gg][Ee][Nn][Tt][Ss].md
+[Aa][Gg][Ee][Nn][Tt].md
+[Gg][Ee][Mm][Ii][Nn][Ii].md
+[Aa][Gg][Yy].md
+.github/copilot-instructions.md
+
+# --- Original Word drafts (Markdown versions live in docs/) ---
+*.docx
+~$*
+
+# --- Build output ---
+build/
+cmake-build-*/
+compile_commands.json
+CMakeUserPresets.json
+
+# --- Models and runtime data (models are distributed separately) ---
+models/*
+!models/README.md
+*.onnx
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.conductor/
+
+# --- Local runs (conductor spike output, scratch briefs) ---
+sandbox/
+/brief.md
+
+# --- Third-party SDKs and binaries (installed outside the repo, never vendored) ---
+onnxruntime*/
+*.tgz
+*.so
+*.so.*
+*.dylib
+*.dll
+*.a
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+.DS_Store
